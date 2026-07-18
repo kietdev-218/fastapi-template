@@ -108,7 +108,7 @@ Objective: All endpoints return the **same envelope structure**, allowing FE to 
 ```json
 {
     "success": false,
-    "code": 40000,
+    "code": 80400,
     "message": "Invalid data",
     "data": null,
     "meta": null,
@@ -138,7 +138,8 @@ up meanings without asking each time a new code is added.
 domain  http-grp  sequence
 ```
 
-- **First 2 digits**: business domain (00 = general/system, 10 = auth, 20 = user, 30 = order, 40 = payment...)
+- **First 2 digits**: business domain (00 = general/system, 10 = auth, 15 = permission, 20 = user, 30 = order, 40 =
+  payment...)
 - **Next 1 digit**: corresponding HTTP error group (0 = 2xx success, 4 = 4xx client error, 5 = 5xx server error)
 - **Last 2 digits**: specific sequence in that domain (freely assigned, incrementing)
 
@@ -147,35 +148,39 @@ domain  http-grp  sequence
 
 ### 4.2. Domain Table
 
-| Domain code | Meaning                                                 |
-| ----------- | ------------------------------------------------------- |
-| `00`        | General / system (does not belong to a specific domain) |
-| `10`        | Auth (login, tokens, permissions)                       |
-| `20`        | User (users, profiles)                                  |
-| `30`        | Order (orders)                                          |
-| `40`        | Payment (payments)                                      |
-| `50`        | Product / Catalog                                       |
+| Domain code | Meaning                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `00`        | System / Common Infrastructure layer error, not related to any business logic (Server error, timeout, rate limit, maintenance mode, service unavailable) |
+| `10`        | Auth / Identity Authentication & session (Login, logout, refresh token, token expiration, incorrect password, OTP, 2FA)                                  |
+| `15`        | Authorization / Permission (Permission assignment, RBAC, insufficient role permissions, locked resource, missing scope)                                  |
+| `20`        | User (users, profiles)                                                                                                                                   |
+| `30`        | Order (orders)                                                                                                                                           |
+| `40`        | Payment (payments)                                                                                                                                       |
+| `50`        | Product / Catalog                                                                                                                                        |
+| `60`        | Search (General search: Query error, index not ready, empty results)                                                                                     |
+| `70`        | Integration / Third-party (Call to external service: Third-party API timeout, webhook error, OAuth with Google/Facebook fail)                            |
+| `80`        | Validation / Input (General input data error: Incorrect format, missing required fields, duplicate data)                                                 |
 
 ### 4.3. Example Code Table
 
-| `code`  | HTTP Status | Meaning                               |
-| ------- | ----------- | ------------------------------------- |
-| `0`     | 200         | Success                               |
-| `1`     | 201         | Created successfully                  |
-| `00400` | 400         | General bad request                   |
-| `00401` | 401         | Not logged in                         |
-| `00403` | 403         | Forbidden (no permission)             |
-| `00429` | 429         | Rate limit                            |
-| `00500` | 500         | System error                          |
-| `10401` | 401         | Token expired                         |
-| `10402` | 401         | Invalid token                         |
-| `20404` | 404         | User not found                        |
-| `20409` | 409         | Email already exists                  |
-| `30404` | 404         | Order not found                       |
-| `30422` | 422         | Product out of stock                  |
-| `40422` | 422         | Insufficient balance                  |
-| `40500` | 500         | Payment gateway error/timeout         |
-| `40000` | 400         | Validation error (invalid input data) |
+| `code`  | HTTP Status | Meaning                                                 |
+| ------- | ----------- | ------------------------------------------------------- |
+| `0`     | 200         | Success                                                 |
+| `1`     | 201         | Created successfully                                    |
+| `00400` | 400         | General bad request                                     |
+| `00401` | 401         | Not logged in                                           |
+| `00403` | 403         | Forbidden (no permission)                               |
+| `00429` | 429         | Rate limit                                              |
+| `00500` | 500         | System error                                            |
+| `10401` | 401         | Token expired                                           |
+| `10402` | 401         | Invalid token                                           |
+| `20404` | 404         | User not found                                          |
+| `20409` | 409         | Email already exists                                    |
+| `30404` | 404         | Order not found                                         |
+| `30422` | 422         | Product out of stock                                    |
+| `40422` | 422         | Insufficient balance                                    |
+| `70500` | 500         | Payment gateway error/timeout (Integration/Third-party) |
+| `80400` | 400         | Validation error (invalid input data)                   |
 
 > This table should be generated/defined in **a single place** (a shared constants file, or generated from
 > OpenAPI/Swagger spec) and imported by both BE and FE, avoiding hardcoded scattered numbers that can easily go out of
@@ -229,7 +234,7 @@ enum ApiCode {
     CREATED = 1,
     BAD_REQUEST = 400,
     UNAUTHORIZED = 401,
-    VALIDATION_ERROR = 40000,
+    VALIDATION_ERROR = 80400,
     USER_NOT_FOUND = 20404,
     TOKEN_EXPIRED = 10401,
     INSUFFICIENT_BALANCE = 40422,

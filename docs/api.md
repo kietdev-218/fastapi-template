@@ -15,7 +15,7 @@ reference.
     ```json
     {
         "success": false,
-        "code": 40000,
+        "code": 80400,
         "message": "Invalid data",
         "data": null,
         "meta": null,

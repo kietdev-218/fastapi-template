@@ -9,7 +9,7 @@ Error response shape::
 
     {
         "success": false,
-        "code": 40000,
+        "code": 80400,
         "message": "Validation error",
         "data": null,
         "meta": null,
