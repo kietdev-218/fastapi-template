@@ -16,8 +16,10 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import Depends
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.redis import RedisManager
 from app.db.session import get_db
 
 # --------------------------------------------------------------------------- #
@@ -25,6 +27,16 @@ from app.db.session import get_db
 # --------------------------------------------------------------------------- #
 
 DBSession = Annotated[AsyncSession, Depends(get_db)]
+
+
+async def get_redis() -> Redis:
+    """
+    FastAPI dependency that provides an active Redis client.
+    """
+    return RedisManager.get_client()
+
+
+RedisDep = Annotated[Redis, Depends(get_redis)]
 
 # TODO: Add service/repository dependencies here as you build out resources.
 # Example:

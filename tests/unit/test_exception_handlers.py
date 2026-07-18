@@ -4,11 +4,14 @@ Unit tests for global exception handlers.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from fastapi import FastAPI, status
 from httpx import ASGITransport, AsyncClient
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.core.constants import ApiCode
 from app.middleware.exception_handlers import (
     AppException,
     ConflictError,
@@ -43,7 +46,7 @@ def test_app() -> FastAPI:
 
     @app.get("/app-exception")
     async def raise_app_exception() -> None:
-        raise AppException("Generic app error", code="CUSTOM_CODE", status_code=400)
+        raise AppException("Generic app error", code=99999, status_code=400)
 
     @app.get("/http-exception")
     async def raise_http_exception() -> None:
@@ -54,7 +57,7 @@ def test_app() -> FastAPI:
         raise RuntimeError("Something went wrong")
 
     @app.post("/validation-error")
-    async def raise_validation_error(data: dict) -> dict:
+    async def raise_validation_error(data: dict[str, Any]) -> dict[str, Any]:
         return data
 
     return app
@@ -67,8 +70,12 @@ async def test_not_found_handler(test_app: FastAPI) -> None:
         response = await ac.get("/not-found")
         assert response.status_code == 404
         data = response.json()
-        assert data["error"]["code"] == "NOT_FOUND"
-        assert data["error"]["message"] == "Resource missing"
+        assert data["success"] is False
+        assert data["code"] == ApiCode.NOT_FOUND
+        assert data["message"] == "Resource missing"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -78,8 +85,12 @@ async def test_conflict_handler(test_app: FastAPI) -> None:
         response = await ac.get("/conflict")
         assert response.status_code == 409
         data = response.json()
-        assert data["error"]["code"] == "CONFLICT"
-        assert data["error"]["message"] == "Resource exists"
+        assert data["success"] is False
+        assert data["code"] == ApiCode.CONFLICT
+        assert data["message"] == "Resource exists"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -89,8 +100,12 @@ async def test_forbidden_handler(test_app: FastAPI) -> None:
         response = await ac.get("/forbidden")
         assert response.status_code == 403
         data = response.json()
-        assert data["error"]["code"] == "FORBIDDEN"
-        assert data["error"]["message"] == "Access denied"
+        assert data["success"] is False
+        assert data["code"] == ApiCode.FORBIDDEN
+        assert data["message"] == "Access denied"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -100,8 +115,12 @@ async def test_unauthorised_handler(test_app: FastAPI) -> None:
         response = await ac.get("/unauthorised")
         assert response.status_code == 401
         data = response.json()
-        assert data["error"]["code"] == "UNAUTHORISED"
-        assert data["error"]["message"] == "Login required"
+        assert data["success"] is False
+        assert data["code"] == ApiCode.UNAUTHORIZED
+        assert data["message"] == "Login required"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -111,8 +130,12 @@ async def test_app_exception_handler(test_app: FastAPI) -> None:
         response = await ac.get("/app-exception")
         assert response.status_code == 400
         data = response.json()
-        assert data["error"]["code"] == "CUSTOM_CODE"
-        assert data["error"]["message"] == "Generic app error"
+        assert data["success"] is False
+        assert data["code"] == 99999
+        assert data["message"] == "Generic app error"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -122,8 +145,12 @@ async def test_http_exception_handler(test_app: FastAPI) -> None:
         response = await ac.get("/http-exception")
         assert response.status_code == 400
         data = response.json()
-        assert data["error"]["code"] == "BAD_REQUEST"
-        assert data["error"]["message"] == "Bad input"
+        assert data["success"] is False
+        assert data["code"] == ApiCode.BAD_REQUEST
+        assert data["message"] == "Bad input"
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -135,8 +162,12 @@ async def test_generic_exception_handler(test_app: FastAPI) -> None:
         response = await ac.get("/generic-exception")
         assert response.status_code == 500
         data = response.json()
-        assert data["error"]["code"] == "INTERNAL_SERVER_ERROR"
-        assert "unexpected error" in data["error"]["message"]
+        assert data["success"] is False
+        assert data["code"] == ApiCode.INTERNAL_SERVER_ERROR
+        assert "unexpected error" in data["message"]
+        assert data["errors"] is None
+        assert "timestamp" in data
+        assert "traceId" in data
 
 
 @pytest.mark.asyncio
@@ -146,5 +177,11 @@ async def test_validation_error_handler(test_app: FastAPI) -> None:
         response = await ac.post("/validation-error", json="not a dictionary")
         assert response.status_code == 422
         data = response.json()
-        assert data["error"]["code"] == "VALIDATION_ERROR"
-        assert "details" in data["error"]
+        assert data["success"] is False
+        assert data["code"] == ApiCode.VALIDATION_ERROR
+        assert "errors" in data
+        assert len(data["errors"]) > 0
+        assert "field" in data["errors"][0]
+        assert "message" in data["errors"][0]
+        assert "timestamp" in data
+        assert "traceId" in data

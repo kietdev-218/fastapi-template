@@ -10,15 +10,18 @@ reference.
 - **Base Path**: `/api/v1`
 - **Interactive Docs**: Available at `/docs` (Swagger UI) only when `ENVIRONMENT=development`.
 - **Validation**: Handled automatically using Pydantic v2 schemas in `app/schemas/`.
-- **Error Envelope**: All exception handlers return a standard JSON envelope:
+- **Error Envelope**: All exception handlers return a standard JSON envelope as defined in
+  [API Response Standard](api-response-standard.md):
     ```json
     {
-        "error": {
-            "code": "VALIDATION_ERROR",
-            "message": "Field errors present",
-            "details": null,
-            "request_id": "correlation-id-uuid"
-        }
+        "success": false,
+        "code": 40000,
+        "message": "Invalid data",
+        "data": null,
+        "meta": null,
+        "errors": [{ "field": "email", "message": "Invalid email format" }],
+        "timestamp": "2026-07-18T10:00:00Z",
+        "traceId": "a1b2c3d4-uuid"
     }
     ```
 

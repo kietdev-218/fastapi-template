@@ -18,10 +18,12 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from app.api.v1.router import api_v1_router
 from app.core.events import lifespan
 from app.core.settings import get_settings
+from app.core.telemetry import setup_telemetry
 from app.middleware.exception_handlers import register_exception_handlers
 from app.middleware.logging import RequestLoggingMiddleware
 from app.utils.logging import setup_logging
@@ -47,6 +49,8 @@ def create_application() -> FastAPI:
     Returns:
         A fully configured ``FastAPI`` application instance.
     """
+    setup_telemetry()
+
     app = FastAPI(
         title=settings.app_name,
         description=settings.app_description,
@@ -91,6 +95,8 @@ def create_application() -> FastAPI:
     # API Routers
     # ------------------------------------------------------------------ #
     app.include_router(api_v1_router, prefix=settings.api_v1_str)
+
+    FastAPIInstrumentor.instrument_app(app)
 
     return app
 

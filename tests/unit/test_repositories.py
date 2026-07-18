@@ -14,7 +14,7 @@ from app.db.repositories.base import BaseRepository
 
 
 class DummyModel(Base):
-    __tablename__ = "dummy_model"
+    __tablename__ = "dummy_model"  # type: ignore[assignment]
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(nullable=False)
@@ -74,3 +74,20 @@ async def test_base_repository_crud(db_session: AsyncSession) -> None:
     deleted = await repo.delete(updated)
     assert deleted.id == created.id
     assert await repo.count() == 0
+
+
+def test_base_tablename_derivation() -> None:
+    """Base class must correctly derive table names from class name."""
+
+    class UserProfile(Base):
+        id: Mapped[int] = mapped_column(primary_key=True)
+
+    class Category(Base):
+        id: Mapped[int] = mapped_column(primary_key=True)
+
+    class Box(Base):
+        id: Mapped[int] = mapped_column(primary_key=True)
+
+    assert UserProfile.__tablename__ == "user_profiles"
+    assert Category.__tablename__ == "categories"
+    assert Box.__tablename__ == "boxes"

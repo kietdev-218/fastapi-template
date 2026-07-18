@@ -16,6 +16,7 @@ import logging
 import time
 from contextvars import ContextVar
 
+from opentelemetry import trace
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -26,12 +27,14 @@ logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------- #
 # Context variable — propagates request ID across async boundaries
-# --------------------------------------------------------------------------- #
 request_id_var: ContextVar[str] = ContextVar("request_id", default="")
 
 
 def get_request_id() -> str:
     """Return the current request's correlation ID, if available."""
+    span = trace.get_current_span()
+    if span and span.get_span_context().is_valid:
+        return format(span.get_span_context().trace_id, "032x")
     return request_id_var.get()
 
 
@@ -71,6 +74,25 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         try:
             response = await call_next(request)
+            duration_ms = (time.perf_counter() - start_time) * 1000
+
+            logger.info(
+                "Response: %s %s %d (%.2fms)",
+                request.method,
+                request.url.path,
+                response.status_code,
+                duration_ms,
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": round(duration_ms, 2),
+                },
+            )
+
+            response.headers["X-Request-ID"] = request_id
+            return response
         except Exception:
             logger.exception(
                 "Unhandled exception during %s %s",
@@ -81,23 +103,3 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             raise
         finally:
             request_id_var.reset(token)
-
-        duration_ms = (time.perf_counter() - start_time) * 1000
-
-        logger.info(
-            "Response: %s %s %d (%.2fms)",
-            request.method,
-            request.url.path,
-            response.status_code,
-            duration_ms,
-            extra={
-                "request_id": request_id,
-                "method": request.method,
-                "path": request.url.path,
-                "status_code": response.status_code,
-                "duration_ms": round(duration_ms, 2),
-            },
-        )
-
-        response.headers["X-Request-ID"] = request_id
-        return response

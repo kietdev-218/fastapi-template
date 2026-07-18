@@ -8,10 +8,11 @@ repetition across every model in the project.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 
 from sqlalchemy import DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
 class TimestampMixin:
@@ -49,4 +50,12 @@ class Base(DeclarativeBase):
 
     # Automatically derive __tablename__ from class name (snake_case plural)
     # Individual models can override this attribute if needed.
-    pass
+    @declared_attr.directive
+    def __tablename__(self) -> str:
+        name = re.sub(r"(?<!^)(?=[A-Z])", "_", self.__name__).lower()
+        if name.endswith("y"):
+            return name[:-1] + "ies"
+        elif name.endswith(("s", "x", "z", "ch", "sh")):
+            return name + "es"
+        else:
+            return name + "s"

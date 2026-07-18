@@ -5,6 +5,7 @@ Unit tests for base schemas, services, and db/API dependencies.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 
@@ -38,7 +39,7 @@ def test_timestamp_schema() -> None:
 async def test_base_service() -> None:
     """BaseService abstract methods should raise NotImplementedError."""
 
-    class DummyService(BaseService[dict, dict, dict]):
+    class DummyService(BaseService[dict[str, Any], dict[str, Any], dict[str, Any]]):
         pass
 
     service = DummyService()

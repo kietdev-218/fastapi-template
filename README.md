@@ -77,3 +77,4 @@ Explore our manuals and guides to understand the project setup and conventions:
 5. [Testing Guide](docs/testing.md) — pytest-asyncio settings, mocking, unit/integration splits, and coverage rules.
 6. [Pre-push Checks Guide](docs/pre-push-checks.md) — Step-by-step developer guidelines for running local format, lint,
    type-checking, test, and security gates.
+7. [API Response Standard](docs/api-response-standard.md) — Standardized API response format for the project.

@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.core.redis import RedisManager
 from app.core.settings import get_settings
 from app.db.session import DatabaseSessionManager
 from app.utils.logging import setup_logging
@@ -59,8 +60,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     DatabaseSessionManager.init(settings.async_database_url, settings=settings)
     logger.info("Database connection pool initialised")
 
+    # Initialise Redis async client
+    RedisManager.init(settings.redis_url)
+    logger.info("Redis connection pool initialised")
+
     # Future startup hooks:
-    # await redis_client.connect()
     # await kafka_producer.start()
 
     yield  # Application is running
@@ -73,8 +77,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     await DatabaseSessionManager.close()
     logger.info("Database connection pool closed")
 
+    # Close Redis async client
+    await RedisManager.close()
+    logger.info("Redis connection pool closed")
+
     # Future shutdown hooks:
-    # await redis_client.disconnect()
     # await kafka_producer.stop()
 
     logger.info("Shutdown complete")

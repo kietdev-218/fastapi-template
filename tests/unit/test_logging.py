@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from pathlib import Path
 
 from app.utils.logging import _JsonFormatter, _TextFormatter, get_logger, setup_logging
 
@@ -95,7 +96,7 @@ def test_text_formatter() -> None:
     assert "Hello info" in formatted
 
 
-def test_setup_logging(tmp_path) -> None:
+def test_setup_logging(tmp_path: Path) -> None:
     """setup_logging must configure standard logging successfully."""
     # JSON format to console
     setup_logging(level="DEBUG", log_format="json")

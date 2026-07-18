@@ -40,11 +40,11 @@ jobs:
 
       - name: Run Ruff (Lint & Format Check)
         run: |
-          ruff check app tests
-          ruff format --check app tests
+          ruff check .
+          ruff format --check .
 
       - name: Run mypy (Type Check)
-        run: mypy app
+        run: mypy .
 
       - name: Run Security Audits
         run: |

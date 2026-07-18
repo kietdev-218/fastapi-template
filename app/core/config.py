@@ -111,6 +111,14 @@ class Settings(BaseSettings):
     # Optional override: takes precedence over individual POSTGRES_* vars
     database_url: str | None = Field(default=None, alias="DATABASE_URL")
 
+    # ------------------------------------------------------------------ #
+    # Redis
+    # ------------------------------------------------------------------ #
+    redis_host: str = Field(default="localhost", alias="REDIS_HOST")
+    redis_port: int = Field(default=6379, alias="REDIS_PORT")
+    redis_db: int = Field(default=0, alias="REDIS_DB")
+    redis_password: str | None = Field(default=None, alias="REDIS_PASSWORD")
+
     # Pool settings
     db_pool_size: int = Field(default=10, alias="DB_POOL_SIZE")
     db_max_overflow: int = Field(default=20, alias="DB_MAX_OVERFLOW")
@@ -177,6 +185,16 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ #
     @computed_field  # type: ignore[prop-decorator]
     @property
+    def redis_url(self) -> str:
+        """
+        Return the Redis DSN.
+        """
+        if self.redis_password:
+            return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
+        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def async_database_url(self) -> str:
         """
         Return the async-compatible PostgreSQL DSN.
@@ -228,12 +246,6 @@ class Settings(BaseSettings):
                 'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
             )
         return self
-
-    @model_validator(mode="before")
-    @classmethod
-    def _placeholder(cls, values: dict[str, Any]) -> dict[str, Any]:
-        """Reserved for future cross-field validation."""
-        return values
 
     # ------------------------------------------------------------------ #
     # Convenience helpers

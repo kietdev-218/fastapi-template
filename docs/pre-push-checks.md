@@ -12,15 +12,15 @@ Actions CI pipeline, and conserves GitHub Actions runner resources.
 
 Before running `git push`, make sure you have run and resolved all of the following checks locally:
 
-| Step  | Area                           | Command                                                   | Expected Result                                                |
-| :---- | :----------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------- |
-| **1** | Python Format & Import Sorting | `ruff format app tests` <br> `ruff check app tests --fix` | Formatted python files, removed unused imports, sorted imports |
-| **2** | Config & Doc Formatting        | `npx prettier --write .`                                  | Formatted Markdown, JSON, YAML according to `.prettierrc`      |
-| **3** | Lint & Style Checks            | `ruff check app tests`                                    | Zero style violations (`All checks passed!`)                   |
-| **4** | Static Type Analysis           | `mypy app`                                                | No type errors (`Success: no issues found...`)                 |
-| **5** | Run Tests & Coverage           | `pytest`                                                  | All test cases PASSED and coverage meets requirements          |
-| **6** | Dependency Audit               | `pip-audit -r requirements.txt`                           | No packages with known vulnerabilities                         |
-| **7** | Secret Scanning                | `detect-secrets scan`                                     | No credentials or private tokens detected in git history       |
+| Step  | Area                           | Command                                   | Expected Result                                                |
+| :---- | :----------------------------- | :---------------------------------------- | :------------------------------------------------------------- |
+| **1** | Python Format & Import Sorting | `ruff format .` <br> `ruff check --fix .` | Formatted python files, removed unused imports, sorted imports |
+| **2** | Config & Doc Formatting        | `npx prettier --write .`                  | Formatted Markdown, JSON, YAML according to `.prettierrc`      |
+| **3** | Lint & Style Checks            | `ruff check .`                            | Zero style violations (`All checks passed!`)                   |
+| **4** | Static Type Analysis           | `mypy .`                                  | No type errors (`Success: no issues found...`)                 |
+| **5** | Run Tests & Coverage           | `pytest`                                  | All test cases PASSED and coverage meets requirements          |
+| **6** | Dependency Audit               | `pip-audit -r requirements.txt`           | No packages with known vulnerabilities                         |
+| **7** | Secret Scanning                | `detect-secrets scan`                     | No credentials or private tokens detected in git history       |
 
 ---
 
@@ -37,13 +37,13 @@ We enforce strict formatting rules across Python source files, configuration fil
 
     ```bash
     # Copes with indentation, layout, and syntax structure
-    ruff format app tests
+    ruff format .
 
     # Automatically removes unused imports and sorts imports (isort-compatible rules)
-    ruff check app tests --select I,F401 --fix
+    ruff check . --select I,F401 --fix
     ```
 
-    _(Tip: Run `ruff check app tests --fix` to automatically resolve all autofixable lint and style errors)._
+    _(Tip: Run `ruff check --fix .` to automatically resolve all autofixable lint and style errors)._
 
 - **Step 1.2: Format Configurations & Documentation (Prettier)** We use **Prettier** to enforce formatting rules defined
   in [.prettierrc](../.prettierrc) for all non-Python files (such as `.json`, `.yml`, `.yaml`, `.md`):
@@ -57,7 +57,7 @@ We enforce strict formatting rules across Python source files, configuration fil
 After formatting your code, check for remaining code quality violations (complexity, styling, naming conventions, etc.):
 
 ```bash
-ruff check app tests
+ruff check .
 ```
 
 **Requirement:** Must print `All checks passed!` before pushing code.
@@ -66,10 +66,10 @@ ruff check app tests
 
 To prevent runtime type mismatch errors, the project configures strict mypy rules (`strict = true`).
 
-Run static analysis against the `app/` directory:
+Run static analysis against the workspace:
 
 ```bash
-mypy app
+mypy .
 ```
 
 **Requirement:** Must print `Success: no issues found in X source files`. Fix any type issues before pushing.
@@ -138,7 +138,7 @@ repos:
             entry: mypy
             language: system
             types: [python]
-            files: ^app/
+            files: ^(app|tests)/
 ```
 
 ### Installation

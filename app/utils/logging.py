@@ -19,9 +19,26 @@ from __future__ import annotations
 import logging
 import sys
 from datetime import UTC, datetime
+from logging.handlers import RotatingFileHandler
 from typing import Any
 
 from pythonjsonlogger.json import JsonFormatter
+
+get_request_id: Any = None
+try:
+    from app.middleware.logging import get_request_id as _get_request_id
+
+    get_request_id = _get_request_id
+except ImportError:
+    pass
+
+trace: Any = None
+try:
+    import opentelemetry.trace as _trace
+
+    trace = _trace
+except ImportError:
+    pass
 
 
 class _JsonFormatter(JsonFormatter):  # type: ignore[misc]
@@ -50,6 +67,34 @@ class _JsonFormatter(JsonFormatter):  # type: ignore[misc]
         log_record["function"] = record.funcName
         log_record["line"] = record.lineno
 
+        # Extract correlation request ID
+        if get_request_id is not None:
+            try:
+                req_id = get_request_id()
+                if req_id:
+                    log_record["requestId"] = req_id
+            except Exception:  # noqa: S110
+                pass
+
+        # Extract OpenTelemetry trace and span ID
+        trace_id = getattr(record, "otelTraceID", None)
+        span_id = getattr(record, "otelSpanID", None)
+
+        if trace_id and trace_id != "0":
+            log_record["traceId"] = trace_id
+        elif trace is not None:
+            try:
+                span = trace.get_current_span()
+                if span and span.get_span_context().is_valid:
+                    log_record["traceId"] = format(span.get_span_context().trace_id, "032x")
+                    if not span_id or span_id == "0":
+                        span_id = format(span.get_span_context().span_id, "016x")
+            except Exception:  # noqa: S110
+                pass
+
+        if span_id and span_id != "0":
+            log_record["spanId"] = span_id
+
         # Extract extra fields
         standard_fields = {
             "timestamp",
@@ -60,6 +105,11 @@ class _JsonFormatter(JsonFormatter):  # type: ignore[misc]
             "function",
             "line",
             "exception",
+            "requestId",
+            "traceId",
+            "spanId",
+            "otelTraceID",
+            "otelSpanID",
         }
         extra_keys = {key: value for key, value in log_record.items() if key not in standard_fields}
 
@@ -92,7 +142,29 @@ class _TextFormatter(logging.Formatter):
         colour = self._COLOURS.get(record.levelname, "")
         timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         level = f"{colour}{record.levelname:<8}{self._RESET}"
-        return f"{timestamp} | {level} | {record.name} | {record.getMessage()}"
+
+        # Fetch correlation IDs if present
+        req_id = ""
+        if get_request_id is not None:
+            try:
+                req_id = get_request_id()
+            except Exception:  # noqa: S110
+                pass
+
+        req_suffix = f" [req:{req_id}]" if req_id else ""
+
+        # Fetch trace ID if present
+        trace_suffix = ""
+        if trace is not None:
+            try:
+                span = trace.get_current_span()
+                if span and span.get_span_context().is_valid:
+                    trace_id = format(span.get_span_context().trace_id, "032x")
+                    trace_suffix = f" [trace:{trace_id[:8]}]"
+            except Exception:  # noqa: S110
+                pass
+
+        return f"{timestamp} | {level} | {record.name}{req_suffix}{trace_suffix} | {record.getMessage()}"
 
 
 def setup_logging(
@@ -133,7 +205,7 @@ def setup_logging(
 def _build_stream_handler(
     formatter: logging.Formatter,
     stream: Any = sys.stdout,
-) -> logging.StreamHandler:  # type: ignore[type-arg]
+) -> logging.StreamHandler[Any]:
     handler = logging.StreamHandler(stream)
     handler.setFormatter(formatter)
     return handler
@@ -142,8 +214,13 @@ def _build_stream_handler(
 def _build_file_handler(
     formatter: logging.Formatter,
     log_file: str,
-) -> logging.FileHandler:
-    handler = logging.FileHandler(log_file, encoding="utf-8")
+) -> RotatingFileHandler:
+    handler = RotatingFileHandler(
+        log_file,
+        maxBytes=50 * 1024 * 1024,  # 50 MB
+        backupCount=5,
+        encoding="utf-8",
+    )
     handler.setFormatter(formatter)
     return handler
 
