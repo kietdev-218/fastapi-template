@@ -1,0 +1,57 @@
+# Python (handled by Ruff/Black)
+*.py
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Coverage & test caches
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+.agents/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Docker runtime
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Alembic migrations (auto-generated)
+alembic/versions/
+
+# Node (if any)
+node_modules/
+package-lock.json

@@ -1,0 +1,49 @@
+name: "🚀 Feature Request"
+description: Suggest a feature or enhancement for this microservice template
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Suggest an enhancement
+        Thank you for taking the time to suggest improvements to the template!
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: A clear and concise description of the proposed feature.
+      placeholder: What feature/improvement would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      description: Why is this feature needed? What problem does it solve, and how will it benefit other developers?
+      placeholder: Describe the problem or goal you are trying to achieve.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Implementation (Optional)
+      description: If you have an idea of how this feature should be implemented, please describe it here.
+      placeholder: File paths, dependencies, class/module structures, or mockups.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you have considered.
+      placeholder: e.g. using a different library, manually managing it in user-space, etc.
+    validations:
+      required: false
+  - type: checkboxes
+    id: commitment
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to submit a pull request to implement this feature myself if approved.
+          required: false

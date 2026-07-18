@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions & Support
+    url: https://github.com/kietdev/template-fastapi/discussions
+    about: Ask questions, get help with setup, share ideas, and connect with the community.

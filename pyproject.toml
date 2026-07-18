@@ -1,0 +1,75 @@
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=90",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "ANN", # flake8-annotations
+    "S",   # bandit
+    "PTH", # flake8-use-pathlib
+]
+ignore = [
+    "ANN401",  # dynamically typed expressions (typing.Any) are disallowed
+    "N818",    # exception name should be named with an Error suffix
+    "S104",    # possible binding to all interfaces (0.0.0.0)
+    "S310",    # audit URL open for permitted schemes
+    "UP046",   # generic class uses Generic subclass instead of type parameters
+    "UP047",   # generic function should use type parameters
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "ANN",     # flake8-annotations: Ignore missing type annotations. Test functions usually don't require strict type hinting.
+    "S105",    # bandit: Ignore hardcoded password warnings. Using dummy or mock passwords in tests is safe and expected.
+    "S106",    # bandit: Ignore hardcoded password function arguments. Passing dummy credentials for testing is fine.
+    "S101",    # bandit: Allow the use of 'assert'. Forbidden in app code for security, but essential for assertions in pytest.
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_ignores = false
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "alembic/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

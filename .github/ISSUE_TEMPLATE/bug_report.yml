@@ -1,0 +1,77 @@
+name: "🐛 Bug Report"
+description: File a bug report to help us improve the template
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for reporting a bug!
+        Please fill out the form below as accurately as possible so we can reproduce and fix the issue.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: Describe what the bug is, how it behaves, and what the impact is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: What steps did you take to trigger this issue?
+      placeholder: |
+        1. Run command '...'
+        2. Modify file '...' to contain '...'
+        3. Send HTTP request to '...'
+        4. See error/unexpected output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+      placeholder: Describe the expected output or behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs & Diagnostic Output
+      description: Please share any relevant logs, traceback details, or terminal output.
+      placeholder: |
+        ```text
+        Paste terminal output or tracebacks here.
+        ```
+    validations:
+      required: false
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: Version of Python (e.g. 3.13.0)
+      placeholder: e.g. 3.13.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Operating System / Environment
+      description: Which OS and execution environment (Docker, local venv, etc.)?
+      placeholder: e.g. Ubuntu 24.04 (Docker) / macOS Sonoma (local venv)
+    validations:
+      required: true
+  - type: checkboxes
+    id: validation-checklist
+    attributes:
+      label: Validation Checklist
+      description: Please verify that you have completed the following steps before submitting.
+      options:
+        - label: I have searched the existing issues and discussions to make sure this is not a duplicate.
+          required: true
+        - label: I am using the latest version of the repository.
+          required: true
+        - label: I have checked my configuration settings (like `.env` variables) and verified they are correct.
+          required: true

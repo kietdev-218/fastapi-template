@@ -1,0 +1,81 @@
+# ============================================================
+# .dockerignore — FastAPI Microservice Template
+# Keeps the build context lean for fast, reproducible builds.
+# ============================================================
+
+# --- Version Control ---
+.git
+.gitignore
+.github
+
+# --- IDE / Editor ---
+.idea
+.vscode
+.agents
+.claude
+*.swp
+*.swo
+*~
+
+# --- Python bytecode & caches ---
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info
+dist
+build
+.eggs
+
+# --- Testing & Quality ---
+tests
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+.coverage.*
+coverage.xml
+htmlcov
+.tox
+
+# --- Virtual environments ---
+.venv
+venv
+env
+ENV
+
+# --- Environment / Secrets (never bake into image) ---
+.env
+.env.*
+!.env.example
+
+# --- Documentation ---
+docs
+*.md
+LICENSE
+
+# --- Logs ---
+*.log
+logs
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Docker ---
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# --- CI/CD ---
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+.circleci
+
+# --- Misc ---
+*.tar.gz
+*.zip
+tmp
+temp
