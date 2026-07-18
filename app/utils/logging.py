@@ -29,6 +29,10 @@ class _JsonFormatter(JsonFormatter):  # type: ignore[misc]
     Structured log formatter that serialises log records as JSON using python-json-logger.
     """
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs.setdefault("json_ensure_ascii", False)
+        super().__init__(*args, **kwargs)
+
     def add_fields(
         self,
         log_record: dict[str, Any],

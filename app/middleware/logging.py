@@ -57,7 +57,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         start_time = time.perf_counter()
 
         logger.info(
-            "→ %s %s",
+            "Request: %s %s",
             request.method,
             request.url.path,
             extra={
@@ -85,7 +85,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         duration_ms = (time.perf_counter() - start_time) * 1000
 
         logger.info(
-            "← %s %s %d (%.2fms)",
+            "Response: %s %s %d (%.2fms)",
             request.method,
             request.url.path,
             response.status_code,

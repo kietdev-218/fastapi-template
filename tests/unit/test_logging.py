@@ -35,6 +35,22 @@ def test_json_formatter() -> None:
     assert parsed["line"] == 42
     assert parsed["extra"]["custom_field"] == "custom_value"
 
+    # Verify that unicode characters are formatted directly in UTF-8 instead of being escaped
+    record_unicode = logging.LogRecord(
+        name="test_logger",
+        level=logging.INFO,
+        pathname="test_file.py",
+        lineno=42,
+        msg="← Test arrow →",
+        args=(),
+        exc_info=None,
+    )
+    formatted_unicode = formatter.format(record_unicode)
+    assert "←" in formatted_unicode
+    assert "→" in formatted_unicode
+    assert "\\u2190" not in formatted_unicode
+    assert "\\u2192" not in formatted_unicode
+
 
 def test_json_formatter_exception() -> None:
     """_JsonFormatter must include exception trace when present."""
